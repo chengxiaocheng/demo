@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>Examples</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <link href="" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"></script>
+    <style type="text/css">
+    #map {
+        width: 800px;
+        height: 600px;
+        border: 1px solid #ccc;
+    }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <button id="hidem">Hide</button>
+    <button id="showm">Show</button>
+    <script type="text/javascript">
+    L.TileLayer.WebDogTileLayer = L.TileLayer.extend({
+        getTileUrl: function(tilePoint) {
+            var urlArgs,
+                getUrlArgs = this.options.getUrlArgs;
+
+            if (getUrlArgs) {
+                var urlArgs = getUrlArgs(tilePoint);
+            } else {
+                urlArgs = {
+                    z: tilePoint.z,
+                    x: tilePoint.x,
+                    y: tilePoint.y
+                };
+            }
+            return L.Util.template(this._url, L.extend(urlArgs, this.options));
+        }
+    });
+
+    L.tileLayer.webdogTileLayer = function(url, options) {
+        return new L.TileLayer.WebDogTileLayer(url, options);
+    };
+
+    var cloudmade = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        id: 'amap',
+        maxZoom: 18,
+        attribution: 'Map data &copy; 2011 <a href="#">OpenStreetMap</a> contributors, Imagery &copy; 2011 <a href="#">CloudMade</a>',
+        key: 'd4fc77ea4a63471cab2423e66626cbb6',
+        pane: 'markers1'
+    });
+
+    // var cloudmade1 = L.tileLayer.webdogTileLayer('http://rt0.map.gtimg.com/realtimerender?z={z}&x={x}&y={y}&type=vector&style=0', {
+    //     id: 'tx',
+    //     getUrlArgs: function(tilePoint) {
+    //         return {
+    //             z: tilePoint.z,
+    //             x: tilePoint.x,
+    //             y: Math.pow(2, tilePoint.z) - 1 - tilePoint.y
+    //         };
+    //     },
+    //     pane: 'markers2'
+    // });
+
+    var cloudmade1 = L.tileLayer('http://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+        id: 'tx',
+        maxZoom: 18,
+        attribution: 'Map data &copy; 2011 <a href="#">OpenStreetMap</a> contributors, Imagery &copy; 2011 <a href="#">CloudMade</a>',
+        key: 'd4fc77ea4a63471cab2423e66626cbb6',
+        pane: 'markers2'
+    });
+
+    var map = L.map('map', {
+        center: [51.505, -0.09],
+        zoom: 9
+    });
+
+    //Create panes for each of the sets of markers
+    var pane1 = map.createPane('markers1');
+    var pane2 = map.createPane('markers2');
+
+    //Create feature groups too, these aren't really used (Can FeatureGroups take a pane? Then that could override the layers they are given maybe?)
+    var markers1 = new L.FeatureGroup();
+    var markers2 = new L.FeatureGroup();
+
+    markers1.addLayer(cloudmade);
+    markers2.addLayer(cloudmade1);
+
+    map.addLayer(markers1);
+    map.addLayer(markers2);
+
+    function hide() {
+        map.getPane('markers2').style.display = 'none';
+        map.eachLayer(function(layer) {
+            if (layer.options.id === 'tx') {
+                layer.setUrl('http://{s}.tiles.wmflabs.org/bw-mapnik/{z}/{x}/{y}.png');
+            }
+        });
+    }
+
+    function show() {
+        map.getPane('markers2').style.display = '';
+    }
+
+    L.DomUtil.get('hidem').onclick = hide;
+    L.DomUtil.get('showm').onclick = show;
+    </script>
+</body>
+
+</html>
